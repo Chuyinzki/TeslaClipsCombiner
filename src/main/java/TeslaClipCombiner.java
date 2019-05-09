@@ -1,3 +1,4 @@
+import javax.swing.*;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -15,13 +16,16 @@ public class TeslaClipCombiner {
     public final static String[] ALL_MODES = {FRONT_MODE, LEFT_REPEATER_MODE, RIGHT_REPEATER_MODE};
 
     public static void main(String[] args) throws IOException {
+        JFileChooser f = new JFileChooser();
+        f.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+//        f.showOpenDialog(null);
         for (String mode : ALL_MODES)
             TeslaClipCombiner.combineClips(new File(TeslaClipCombiner.class
                     .getClassLoader().getResource("sample_files").getFile()), mode);
 
     }
 
-    public static File combineClips(File folderFiles, String mode) throws IOException {
+    public static void combineClips(File folderFiles, String mode) throws IOException {
         //https://trac.ffmpeg.org/wiki/Concatenate#demuxer
 
         List<String> filePaths = new ArrayList<String>();
@@ -40,11 +44,13 @@ public class TeslaClipCombiner {
         File outputFolder = new File("outputFolder");
         if (!outputFolder.mkdir())
             for (File file : outputFolder.listFiles())
-                if(file.getName().contains(mode))
-                    file.delete();
+                if (file.getName().contains(mode)) {
+                    JOptionPane.showMessageDialog(null, "Output folder already includes " +
+                            "file \"" + mode + "\"", "InfoBox: Failed to create file for " + mode, JOptionPane.INFORMATION_MESSAGE);
+                    return;
+                }
 
         runCommand(String.format("%s -f concat -safe 0 -i mylist.txt -c copy %s/%s.mp4", filePath, outputFolder, mode));
-        return null; //return combined file
     }
 
     //This code from: https://stackoverflow.com/questions/5711084/java-runtime-getruntime-getting-output-from-executing-a-command-line-program
