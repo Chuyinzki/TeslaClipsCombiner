@@ -20,6 +20,10 @@ public class TeslaClipCombiner {
         final File[] sourceFolder = {null};
         final File[] outputFolder = {null};
 
+        JFrame frame = new JFrame("Tesla Clip Combiner");
+        frame.setSize(500, 100);
+        frame.setVisible(true);
+
         File tempListFile = new File("TeslaClipCombiner_TEMP_FILE.txt");
 
         Runnable r = new Runnable() {
@@ -29,7 +33,7 @@ public class TeslaClipCombiner {
                 f.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
                 f.setDialogTitle("Select folder with Tesla video files");
 
-                if (f.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
+                if (f.showOpenDialog(frame) == JFileChooser.APPROVE_OPTION) {
                     sourceFolder[0] = f.getSelectedFile();
                 }
             }
@@ -41,7 +45,7 @@ public class TeslaClipCombiner {
                 JFileChooser f2 = new JFileChooser();
                 f2.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
                 f2.setDialogTitle("Select output folder to put combined videos");
-                if (f2.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
+                if (f2.showOpenDialog(frame) == JFileChooser.APPROVE_OPTION) {
                     outputFolder[0] = f2.getSelectedFile();
                 }
             }
@@ -50,16 +54,27 @@ public class TeslaClipCombiner {
         SwingUtilities.invokeAndWait(r);
         SwingUtilities.invokeAndWait(r2);
 
-        if (sourceFolder[0] != null && outputFolder[0] != null)
+
+        JPanel p = new JPanel();
+        JProgressBar b = new JProgressBar();
+        b.setValue(0);
+        b.setStringPainted(true);
+        p.add(b);
+        frame.add(p);
+
+        if (sourceFolder[0] != null && outputFolder[0] != null) {
             try {
                 for (String mode : ALL_MODES) {
+                    b.setValue(Math.min(b.getValue() + (100 / ALL_MODES.length), 100));
                     TeslaClipCombiner.combineClips(sourceFolder[0], outputFolder[0], mode, tempListFile);
                 }
             } catch (IOException e) {
                 e.printStackTrace();
             }
-
+        }
+        b.setValue(100);
         tempListFile.delete();
+
     }
 
     public static void combineClips(File sourceFolder, File outputFolder, String mode, File tempListFile) throws IOException {
@@ -82,7 +97,7 @@ public class TeslaClipCombiner {
             for (File file : outputFolder.listFiles())
                 if (file.getName().contains(mode)) {
                     JOptionPane.showMessageDialog(null, "Output folder already includes " +
-                            "file \"" + mode + "\"", "InfoBox: Failed to create file for " + mode, JOptionPane.INFORMATION_MESSAGE);
+                            "file \"" + mode + "\"", "Failed to create file for " + mode, JOptionPane.INFORMATION_MESSAGE);
                     return;
                 }
 
