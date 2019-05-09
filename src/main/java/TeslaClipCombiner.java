@@ -15,17 +15,25 @@ public class TeslaClipCombiner {
     public final static String RIGHT_REPEATER_MODE = "right_repeater";
     public final static String[] ALL_MODES = {FRONT_MODE, LEFT_REPEATER_MODE, RIGHT_REPEATER_MODE};
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
         JFileChooser f = new JFileChooser();
         f.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 //        f.showOpenDialog(null);
-        for (String mode : ALL_MODES)
-            TeslaClipCombiner.combineClips(new File(TeslaClipCombiner.class
-                    .getClassLoader().getResource("sample_files").getFile()), mode);
 
+        File tempListFile = new File("mylist.txt");
+        try {
+            for (String mode : ALL_MODES) {
+                TeslaClipCombiner.combineClips(new File(TeslaClipCombiner.class
+                        .getClassLoader().getResource("sample_files").getFile()), mode, tempListFile);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        tempListFile.delete();
     }
 
-    public static void combineClips(File folderFiles, String mode) throws IOException {
+    public static void combineClips(File folderFiles, String mode, File tempListFile) throws IOException {
         //https://trac.ffmpeg.org/wiki/Concatenate#demuxer
 
         List<String> filePaths = new ArrayList<String>();
@@ -34,7 +42,7 @@ public class TeslaClipCombiner {
                 filePaths.add(videoFile.getAbsoluteFile().toString());
 
         Collections.sort(filePaths);
-        PrintWriter writer = new PrintWriter("mylist.txt", "UTF-8");
+        PrintWriter writer = new PrintWriter(tempListFile, "UTF-8");
         for (String filePath : filePaths)
             writer.println(String.format("file '%s'", filePath));
         writer.close();
@@ -50,7 +58,8 @@ public class TeslaClipCombiner {
                     return;
                 }
 
-        runCommand(String.format("%s -f concat -safe 0 -i mylist.txt -c copy %s/%s.mp4", filePath, outputFolder, mode));
+        runCommand(String.format("%s -f concat -safe 0 -i %s -c copy %s/%s.mp4", filePath, tempListFile, outputFolder, mode));
+
     }
 
     //This code from: https://stackoverflow.com/questions/5711084/java-runtime-getruntime-getting-output-from-executing-a-command-line-program
