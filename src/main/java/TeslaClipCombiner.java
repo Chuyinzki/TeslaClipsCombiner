@@ -16,28 +16,40 @@ public class TeslaClipCombiner {
     public final static String[] ALL_MODES = {FRONT_MODE, LEFT_REPEATER_MODE, RIGHT_REPEATER_MODE};
 
     public static void main(String[] args) {
+        File sourceFolder = null;
+        File outputFolder = null;
+
+        File tempListFile = new File("TeslaClipCombiner_TEMP_FILE.txt");
         JFileChooser f = new JFileChooser();
         f.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-//        f.showOpenDialog(null);
+        f.setDialogTitle("Select folder with Tesla video files");
 
-        File tempListFile = new File("mylist.txt");
-        try {
-            for (String mode : ALL_MODES) {
-                TeslaClipCombiner.combineClips(new File(TeslaClipCombiner.class
-                        .getClassLoader().getResource("sample_files").getFile()), mode, tempListFile);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
+        if (f.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
+            sourceFolder = f.getSelectedFile();
         }
+        JFileChooser f2 = new JFileChooser();
+        f2.setDialogTitle("Select output folder to put combined videos");
+        if (f2.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
+            outputFolder = f2.getSelectedFile();
+        }
+
+        if (sourceFolder != null && outputFolder != null)
+            try {
+                for (String mode : ALL_MODES) {
+                    TeslaClipCombiner.combineClips(sourceFolder, outputFolder, mode, tempListFile);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
 
         tempListFile.delete();
     }
 
-    public static void combineClips(File folderFiles, String mode, File tempListFile) throws IOException {
+    public static void combineClips(File sourceFolder, File outputFolder, String mode, File tempListFile) throws IOException {
         //https://trac.ffmpeg.org/wiki/Concatenate#demuxer
 
         List<String> filePaths = new ArrayList<String>();
-        for (File videoFile : folderFiles.listFiles())
+        for (File videoFile : sourceFolder.listFiles())
             if (videoFile.getName().contains(mode) && videoFile.length() != 0)
                 filePaths.add(videoFile.getAbsoluteFile().toString());
 
@@ -49,7 +61,6 @@ public class TeslaClipCombiner {
 
         String filePath = TeslaClipCombiner.class
                 .getClassLoader().getResource("ffmpeg").getFile();
-        File outputFolder = new File("outputFolder");
         if (!outputFolder.mkdir())
             for (File file : outputFolder.listFiles())
                 if (file.getName().contains(mode)) {
