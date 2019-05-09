@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -15,28 +16,44 @@ public class TeslaClipCombiner {
     public final static String RIGHT_REPEATER_MODE = "right_repeater";
     public final static String[] ALL_MODES = {FRONT_MODE, LEFT_REPEATER_MODE, RIGHT_REPEATER_MODE};
 
-    public static void main(String[] args) {
-        File sourceFolder = null;
-        File outputFolder = null;
+    public static void main(String[] args) throws InvocationTargetException, InterruptedException {
+        final File[] sourceFolder = {null};
+        final File[] outputFolder = {null};
 
         File tempListFile = new File("TeslaClipCombiner_TEMP_FILE.txt");
-        JFileChooser f = new JFileChooser();
-        f.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        f.setDialogTitle("Select folder with Tesla video files");
 
-        if (f.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
-            sourceFolder = f.getSelectedFile();
-        }
-        JFileChooser f2 = new JFileChooser();
-        f2.setDialogTitle("Select output folder to put combined videos");
-        if (f2.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
-            outputFolder = f2.getSelectedFile();
-        }
+        Runnable r = new Runnable() {
+            @Override
+            public void run() {
+                JFileChooser f = new JFileChooser();
+                f.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+                f.setDialogTitle("Select folder with Tesla video files");
 
-        if (sourceFolder != null && outputFolder != null)
+                if (f.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
+                    sourceFolder[0] = f.getSelectedFile();
+                }
+            }
+        };
+
+        Runnable r2 = new Runnable() {
+            @Override
+            public void run() {
+                JFileChooser f2 = new JFileChooser();
+                f2.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+                f2.setDialogTitle("Select output folder to put combined videos");
+                if (f2.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
+                    outputFolder[0] = f2.getSelectedFile();
+                }
+            }
+        };
+
+        SwingUtilities.invokeAndWait(r);
+        SwingUtilities.invokeAndWait(r2);
+
+        if (sourceFolder[0] != null && outputFolder[0] != null)
             try {
                 for (String mode : ALL_MODES) {
-                    TeslaClipCombiner.combineClips(sourceFolder, outputFolder, mode, tempListFile);
+                    TeslaClipCombiner.combineClips(sourceFolder[0], outputFolder[0], mode, tempListFile);
                 }
             } catch (IOException e) {
                 e.printStackTrace();
