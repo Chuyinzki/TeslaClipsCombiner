@@ -65,7 +65,11 @@ public class TeslaClipCombiner {
         if (sourceFolder[0] != null && outputFolder[0] != null) {
             try {
                 for (String mode : ALL_MODES) {
-                    b.setValue(Math.min(b.getValue() + (100 / ALL_MODES.length), 100));
+                    SwingUtilities.invokeAndWait(new Runnable() {
+                        public void run() {
+                            b.setValue(Math.min(b.getValue() + (100 / ALL_MODES.length), 100));
+                        }
+                    });
                     TeslaClipCombiner.combineClips(sourceFolder[0], outputFolder[0], mode, tempListFile);
                 }
             } catch (IOException e) {
@@ -74,7 +78,8 @@ public class TeslaClipCombiner {
         }
         b.setValue(100);
         tempListFile.delete();
-
+        JOptionPane.showMessageDialog(null, "Process Complete", "Finished", JOptionPane.INFORMATION_MESSAGE);
+        System.exit(0);
     }
 
     public static void combineClips(File sourceFolder, File outputFolder, String mode, File tempListFile) throws IOException {
