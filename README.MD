@@ -7,7 +7,7 @@ The videos saved when using a USB drive in a Tesla for Sentry Mode are typically
 The compiled jar is in the root folder as a convenience. Double click it and a GUI will guide you through two steps. First specify the folder where the videos to be combined are, then specify the folder where you would like the videos to be placed. 
 
 ### Prerequisites
-
+Currently this only works with Mac, but it can be easily extended to work on Windows if anyone wants that.
 ```
 Java 8
 ```
