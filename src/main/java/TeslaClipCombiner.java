@@ -75,6 +75,10 @@ public class TeslaClipCombiner {
             } catch (IOException e) {
                 e.printStackTrace();
             }
+        } else {
+            JOptionPane.showMessageDialog(null, "Folders were not chosen, please try again.",
+                    "Folders not selected", JOptionPane.INFORMATION_MESSAGE);
+            System.exit(0);
         }
         b.setValue(100);
         tempListFile.delete();
