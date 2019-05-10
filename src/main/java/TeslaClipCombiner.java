@@ -111,7 +111,6 @@ public class TeslaClipCombiner {
                 }
 
         runCommand(String.format("%s -f concat -safe 0 -i %s -c copy %s/%s.mp4", filePath, tempListFile, outputFolder, mode));
-
     }
 
     //This code from: https://stackoverflow.com/questions/5711084/java-runtime-getruntime-getting-output-from-executing-a-command-line-program
