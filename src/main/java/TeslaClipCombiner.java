@@ -5,9 +5,14 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class TeslaClipCombiner {
 
@@ -88,17 +93,23 @@ public class TeslaClipCombiner {
 
     public static void combineClips(File sourceFolder, File outputFolder, String mode, File tempListFile) throws IOException {
         //https://trac.ffmpeg.org/wiki/Concatenate#demuxer
+        try (Stream<Path> walk = Files.walk(sourceFolder.toPath())) {
 
-        List<String> filePaths = new ArrayList<String>();
-        for (File videoFile : sourceFolder.listFiles())
-            if (videoFile.getName().contains(mode) && videoFile.length() != 0)
-                filePaths.add(videoFile.getAbsoluteFile().toString());
+            List<String> result = walk.filter(Files::isRegularFile)
+                    .filter(p -> p.getFileName().toString().contains(mode) && p.toFile().length() != 0)
+                    .map(Path::toString).collect(Collectors.toList());
 
-        Collections.sort(filePaths);
-        PrintWriter writer = new PrintWriter(tempListFile, "UTF-8");
-        for (String filePath : filePaths)
-            writer.println(String.format("file '%s'", filePath));
-        writer.close();
+            result.forEach(System.out::println);
+
+            Collections.sort(result);
+            PrintWriter writer = new PrintWriter(tempListFile, "UTF-8");
+            for (String filePath : result)
+                writer.println(String.format("file '%s'", filePath));
+
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
         String filePath = TeslaClipCombiner.class
                 .getClassLoader().getResource("ffmpeg").getFile();
