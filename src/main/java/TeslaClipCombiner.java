@@ -94,7 +94,7 @@ public class TeslaClipCombiner {
         try (Stream<Path> walk = Files.walk(sourceFolder.toPath())) {
 
             List<String> result = walk.filter(Files::isRegularFile)
-                    .filter(p -> p.getFileName().toString().contains(mode) && p.toFile().length() != 0)
+                    .filter(p -> p.getFileName().toString().contains(mode) && p.toFile().length() >= 1000)
                     .map(Path::toString).collect(Collectors.toList());
 
             result.forEach(System.out::println);
